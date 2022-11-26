@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">FDroid_mvvm</string>
+    <string name="refresh_data">刷新数据</string>
+    <string name="request_ui_data">手动请求UI数据</string>
+    <string name="request_list_data">手动请求列表数据</string>
+
+    <string name="title_home">首页</string>
+    <string name="title_order">订单</string>
+    <string name="title_mine">我的</string>
+</resources>
