@@ -1,7 +1,7 @@
 package com.jjl.mvvm.net
 
 import com.jjl.mvvm.BuildConfig
-import com.jjl.mvvm.log.NetLogger
+import com.jjl.mvvm.flog.NetLogger
 import com.jjl.mvvm.net.interceptor.FormatLogInterceptor
 import com.jjl.mvvm.net.interceptor.RequestHeader
 import com.jjl.mvvm.net.interceptor.XInterceptor

@@ -1,4 +1,4 @@
-package com.jjl.mvvm.log
+package com.jjl.mvvm.flog
 
 import com.jjl.mvvm.net.interceptor.FormatLogInterceptor
 
@@ -12,6 +12,6 @@ import com.jjl.mvvm.net.interceptor.FormatLogInterceptor
 class NetLogger : FormatLogInterceptor.Logger {
 
     override fun log(message: String) {
-        FLogger.json(message)
+        FLog.json("net", message)
     }
 }
