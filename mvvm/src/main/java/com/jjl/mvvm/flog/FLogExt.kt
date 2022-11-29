@@ -8,7 +8,7 @@ import android.util.Log
  * @date  2022/11/28 22:03
  * @version V1.0
  */
-fun JsonLog.printLine(tag: String?, isTop: Boolean) {
+fun printLine(tag: String?, isTop: Boolean) {
     if (isTop) {
         Log.d(
             tag,
@@ -22,13 +22,10 @@ fun JsonLog.printLine(tag: String?, isTop: Boolean) {
     }
 }
 
-fun FLog.lineSeparator(): String {
+fun lineSeparator(): String {
     return System.getProperty("line.separator") ?: "\r\n"
 }
 
-fun <T> T.log() {
-    FLog.d(this)
-}
 
 
 

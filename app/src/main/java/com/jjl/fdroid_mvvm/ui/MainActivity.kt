@@ -6,7 +6,6 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.jjl.fdroid_mvvm.R
 import com.jjl.fdroid_mvvm.databinding.ActivityMainBinding
-import com.jjl.fdroid_mvvm.ext.log
 import com.jjl.mvvm.base.BaseVmActivity
 import com.jjl.mvvm.flog.FLog
 
@@ -16,7 +15,6 @@ class MainActivity :
 //    private val viewModel by viewModels<MainViewModel>()
 
     override fun initView() {
-        initData()
        FLog.d("initView")
 
         val navController: NavController = findNavController(R.id.nav_host_fragment_activity_main)
@@ -28,12 +26,6 @@ class MainActivity :
         }
 
     }
-
-    private fun initData() {
-        FLog.d("initData")
-        "initdata".log()
-    }
-
 
 }
 

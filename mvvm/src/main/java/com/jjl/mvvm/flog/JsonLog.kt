@@ -12,29 +12,35 @@ import org.json.JSONObject
  * @version V1.0
  */
 object JsonLog {
-    fun printJson(tag: String?, msg: String?, headString: String?) {
-        var message: String? = msg?.let {
+    fun printJson(tag: String?, msg: String?, isShowTopLine: Boolean = true, isShowBottomLine: Boolean = true) {
+        val message: String? = msg?.let {
             try {
                 if (it.startsWith("{")) {
-                    val jsonObject = JSONObject(msg)
+                    val jsonObject = JSONObject(it)
                     jsonObject.toString(FLog.JSON_INDENT)
                 } else if (it.startsWith("[")) {
-                    val jsonArray = JSONArray(msg)
+                    val jsonArray = JSONArray(it)
                     jsonArray.toString(FLog.JSON_INDENT)
                 } else {
-                    msg
+                    it
                 }
             } catch (e: JSONException) {
-                msg
+                it
             }
         }
 
-        printLine(tag, true)
-        message = headString + FLog.lineSeparator() + message
-        val lines: Array<String> = message.split(FLog.lineSeparator()).toTypedArray()
-        for (line in lines) {
-            Log.d(tag, "║ $line")
+        if (isShowTopLine) {
+            printLine(tag, true)
         }
-        printLine(tag, false)
+        val lines: Array<String>? = message?.split(lineSeparator())?.toTypedArray()
+        lines?.let {
+            for (line in it) {
+                Log.d(tag, "║ $line")
+            }
+        }
+        if (isShowBottomLine) {
+            printLine(tag, false)
+        }
+
     }
 }

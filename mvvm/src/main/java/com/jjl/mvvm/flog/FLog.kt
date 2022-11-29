@@ -127,7 +127,7 @@ object FLog {
         val contents: String = buildContents(objects)
         when (type) {
             V, D, I, W, E, A -> BaseLog.printDefault(type, tag, headString + contents)
-            JSON -> JsonLog.printJson(tag, contents, headString)
+            JSON -> JsonLog.printJson(tag, contents)
         }
     }
 

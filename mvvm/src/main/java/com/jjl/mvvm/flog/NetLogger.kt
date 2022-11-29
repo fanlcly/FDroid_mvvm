@@ -11,7 +11,7 @@ import com.jjl.mvvm.net.interceptor.FormatLogInterceptor
  */
 class NetLogger : FormatLogInterceptor.Logger {
 
-    override fun log(message: String) {
-        FLog.json("net", message)
+    override fun log(message: String, isShowTopLine: Boolean, isShowBottomLine: Boolean) {
+        JsonLog.printJson("net", message, isShowTopLine, isShowBottomLine)
     }
 }

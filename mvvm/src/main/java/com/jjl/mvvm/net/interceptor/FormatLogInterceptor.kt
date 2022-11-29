@@ -1,22 +1,14 @@
 package com.jjl.mvvm.net.interceptor
 
-import android.util.Log
 import okhttp3.Headers
 import okhttp3.Interceptor
-import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.internal.http.promisesBody
 import okhttp3.internal.platform.Platform
 import okio.GzipSource
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.EOFException
 import java.io.IOException
-import java.nio.Buffer
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-import java.nio.charset.UnsupportedCharsetException
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -101,7 +93,7 @@ class FormatLogInterceptor(private var logger: Logger) : Interceptor {
     }
 
     fun interface Logger {
-        fun log(message: String)
+        fun log(message: String, isShowTopLine: Boolean, isShowBottomLine: Boolean)
 
         companion object {
             /** A [Logger] defaults output appropriate for the current platform. */
@@ -109,7 +101,12 @@ class FormatLogInterceptor(private var logger: Logger) : Interceptor {
             val DEFAULT: Logger = DefaultLogger()
 
             private class DefaultLogger : Logger {
-                override fun log(message: String) {
+
+                override fun log(
+                    message: String,
+                    isShowTopLine: Boolean,
+                    isShowBottomLine: Boolean
+                ) {
                     Platform.get().log(message)
                 }
             }
@@ -215,36 +212,42 @@ class FormatLogInterceptor(private var logger: Logger) : Interceptor {
                 }
             }
         }
-        logger.log(requestBuffer.toString())
+        logger.log(requestBuffer.toString(), isShowTopLine = true, isShowBottomLine = true)
 
         val startNs = System.nanoTime()
         val response: Response
         try {
             response = chain.proceed(request)
         } catch (e: Exception) {
-            logger.log("<-- HTTP FAILED: $e")
+            logger.log("<-- HTTP FAILED: $e", isShowTopLine = true, isShowBottomLine = true)
             throw e
         }
 
         val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
 
         val responseBuilder = StringBuilder()
+        val responseEndBuilder = StringBuilder()
         val responseBody = response.body!!
         val contentLength = responseBody.contentLength()
         val bodySize = if (contentLength != -1L) "$contentLength-byte" else "unknown-length"
         responseBuilder.append("<-- ${response.code}${if (response.message.isEmpty()) "" else ' ' + response.message} ${response.request.url} (${tookMs}ms${if (!logHeaders) ", $bodySize body" else ""})")
             .append("\n")
 
+        if (!logHeaders) {
+            logger.log(responseBuilder.toString(), isShowTopLine = true, isShowBottomLine = false)
+        }
+
         if (logHeaders) {
             val headers = response.headers
             for (i in 0 until headers.size) {
                 logHeader(headers, i, responseBuilder)
             }
+            logger.log(responseBuilder.toString(), isShowTopLine = true, isShowBottomLine = false)
 
             if (!logBody || !response.promisesBody()) {
-                responseBuilder.append("<-- END HTTP").append("\n")
+                responseEndBuilder.append("<-- END HTTP").append("\n")
             } else if (bodyHasUnknownEncoding(response.headers)) {
-                responseBuilder.append("<-- END HTTP (encoded body omitted)").append("\n")
+                responseEndBuilder.append("<-- END HTTP (encoded body omitted)").append("\n")
             } else {
                 val source = responseBody.source()
                 source.request(Long.MAX_VALUE) // Buffer the entire body.
@@ -264,24 +267,25 @@ class FormatLogInterceptor(private var logger: Logger) : Interceptor {
                     contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
 
                 if (!buffer.isProbablyUtf8()) {
-                    responseBuilder.append("")
-                    responseBuilder.append("<-- END HTTP (binary ${buffer.size}-byte body omitted)")
+                    responseEndBuilder.append("<-- END HTTP (binary ${buffer.size}-byte body omitted)")
                     return response
                 }
 
                 if (contentLength != 0L) {
-                    responseBuilder.append("")
-                    responseBuilder.append(buffer.clone().readString(charset))
+                    val responseBodyBuilder = StringBuilder()
+                    val body = buffer.clone().readString(charset)
+                    responseBodyBuilder.append(body).append("\n")
+                    logger.log(responseBodyBuilder.toString(), isShowTopLine = false, isShowBottomLine = false)
                 }
 
                 if (gzippedLength != null) {
-                    responseBuilder.append("<-- END HTTP (${buffer.size}-byte, $gzippedLength-gzipped-byte body)")
+                    responseEndBuilder.append("<-- END HTTP (${buffer.size}-byte, $gzippedLength-gzipped-byte body)")
                 } else {
-                    responseBuilder.append("<-- END HTTP (${buffer.size}-byte body)")
+                    responseEndBuilder.append("<-- END HTTP (${buffer.size}-byte body)")
                 }
             }
         }
-        logger.log(responseBuilder.toString())
+        logger.log(responseEndBuilder.toString(), isShowTopLine = false, isShowBottomLine = true)
         return response
     }
 
